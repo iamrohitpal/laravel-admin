@@ -1,4 +1,4 @@
-<x-admin.layout type="category">
+<x-admin.layout type="role">
     <!--start page wrapper -->
     <div class="page-wrapper">
         <div class="page-content">
@@ -6,7 +6,7 @@
             <div
                 class="page-breadcrumb d-none d-sm-flex align-items-center mb-3"
             >
-                <div class="breadcrumb-title pe-3">Category</div>
+                <div class="breadcrumb-title pe-3">Role</div>
                 <div class="ps-3">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
@@ -19,16 +19,16 @@
                                 class="breadcrumb-item active"
                                 aria-current="page"
                             >
-                               Category
+                               Role
                             </li>
                         </ol>
                     </nav>
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
-                        <a href="{{route('category_form',['type' => 'create', 'id' => '0'])}}">
+                        <a href="{{route('role_form',['type' => 'create', 'id' => '0'])}}">
                             <button type="button" class="btn btn-primary">
-                                Add Category
+                                Add Role
                             </button>
                         </a>
                     </div>
@@ -47,45 +47,33 @@
                             <thead>
                                 <tr>
                                     <th>Id</th>
-                                    <th>Category Name</th>
-                                    <th>Image</th>
+                                    <th>Name</th>
                                     <th>Description</th>
+                                    <th>Permission Type</th>
                                     <th>Created Date</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($data['category'] as $key => $category)
+                                @foreach ($data['roles'] as $key => $role)
                                     <tr>
                                         <td>{{$key+1}}</td>
-                                        <td>{{$category->name}}</td>
+                                        <td>{{$role->name}}</td>
+                                        <td>{!!$role->description!!}</td>
+                                        <td>{{$role->permission_type}}</td>
+                                        <td>{{$role->created_at}}</td>
                                         <td>
-                                            <img src="{{asset('upload_image/category/'.$category->image)}}" class="rounded-circle p-1 border" width="45" height="45" alt="...">
-                                        </td>
-                                        <td>{!!$category->description!!}</td>
-                                        <td>{{$category->created_at}}</td>
-                                        <td>
-                                            <a href="{{route('category_form',['type'=>'edit','id'=>$category->id])}}">
+                                            <a href="{{route('role_form',['type'=>'edit','id'=>$role->id])}}">
                                                 <i class="text-primary" data-feather="edit"></i>
                                             </a>
-                                            <a  data-bs-toggle="modal" data-bs-target="#deleteModal{{ $category->id }}" href="#">
+                                            <a  data-bs-toggle="modal" data-bs-target="#deleteModal{{ $role->id }}" href="#">
                                                 <i class="text-primary" data-feather="trash-2"></i>
                                             </a>
-                                            <x-admin.modal type="category" id="{{ $category->id }}" />
+                                            <x-admin.modal type="role" id="{{ $role->id }}" />
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
-                            {{-- <tfoot>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Position</th>
-                                    <th>Office</th>
-                                    <th>Age</th>
-                                    <th>Start date</th>
-                                    <th>Salary</th>
-                                </tr>
-                            </tfoot> --}}
                         </table>
                     </div>
                 </div>

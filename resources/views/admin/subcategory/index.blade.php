@@ -1,4 +1,4 @@
-<x-admin.layout type="category">
+<x-admin.layout type="subCategory">
     <!--start page wrapper -->
     <div class="page-wrapper">
         <div class="page-content">
@@ -6,7 +6,7 @@
             <div
                 class="page-breadcrumb d-none d-sm-flex align-items-center mb-3"
             >
-                <div class="breadcrumb-title pe-3">Category</div>
+                <div class="breadcrumb-title pe-3">Sub Category</div>
                 <div class="ps-3">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
@@ -19,16 +19,16 @@
                                 class="breadcrumb-item active"
                                 aria-current="page"
                             >
-                               Category
+                               Sub Category
                             </li>
                         </ol>
                     </nav>
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
-                        <a href="{{route('category_form',['type' => 'create', 'id' => '0'])}}">
+                        <a href="{{route('subcategory_form',['type' => 'create', 'id' => '0'])}}">
                             <button type="button" class="btn btn-primary">
-                                Add Category
+                                Add Sub Category
                             </button>
                         </a>
                     </div>
@@ -48,6 +48,7 @@
                                 <tr>
                                     <th>Id</th>
                                     <th>Category Name</th>
+                                    <th>Sub Category Name</th>
                                     <th>Image</th>
                                     <th>Description</th>
                                     <th>Created Date</th>
@@ -55,9 +56,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($data['category'] as $key => $category)
+                                @foreach ($data['subcategory'] as $key => $category)
                                     <tr>
                                         <td>{{$key+1}}</td>
+                                        <td>{{$category->category}}</td>
                                         <td>{{$category->name}}</td>
                                         <td>
                                             <img src="{{asset('upload_image/category/'.$category->image)}}" class="rounded-circle p-1 border" width="45" height="45" alt="...">
@@ -65,7 +67,7 @@
                                         <td>{!!$category->description!!}</td>
                                         <td>{{$category->created_at}}</td>
                                         <td>
-                                            <a href="{{route('category_form',['type'=>'edit','id'=>$category->id])}}">
+                                            <a href="{{route('subcategory_form',['type'=>'edit','id'=>$category->id])}}">
                                                 <i class="text-primary" data-feather="edit"></i>
                                             </a>
                                             <a  data-bs-toggle="modal" data-bs-target="#deleteModal{{ $category->id }}" href="#">

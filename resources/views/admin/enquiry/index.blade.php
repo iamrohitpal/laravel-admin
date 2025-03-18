@@ -1,4 +1,4 @@
-<x-admin.layout type="category">
+ia<x-admin.layout type="enquiry">
     <!--start page wrapper -->
     <div class="page-wrapper">
         <div class="page-content">
@@ -6,7 +6,7 @@
             <div
                 class="page-breadcrumb d-none d-sm-flex align-items-center mb-3"
             >
-                <div class="breadcrumb-title pe-3">Category</div>
+                <div class="breadcrumb-title pe-3">Enquiries</div>
                 <div class="ps-3">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
@@ -19,19 +19,10 @@
                                 class="breadcrumb-item active"
                                 aria-current="page"
                             >
-                               Category
+                               Enquiries
                             </li>
                         </ol>
                     </nav>
-                </div>
-                <div class="ms-auto">
-                    <div class="btn-group">
-                        <a href="{{route('category_form',['type' => 'create', 'id' => '0'])}}">
-                            <button type="button" class="btn btn-primary">
-                                Add Category
-                            </button>
-                        </a>
-                    </div>
                 </div>
             </div>
             <!--end breadcrumb-->
@@ -47,45 +38,36 @@
                             <thead>
                                 <tr>
                                     <th>Id</th>
-                                    <th>Category Name</th>
-                                    <th>Image</th>
-                                    <th>Description</th>
+                                    <th>Full Name</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>Message</th>
                                     <th>Created Date</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($data['category'] as $key => $category)
+                                @foreach ($data['enquiries'] as $key => $enquiry)
                                     <tr>
                                         <td>{{$key+1}}</td>
-                                        <td>{{$category->name}}</td>
+                                        <td>{{$enquiry->name}}</td>
+                                        <td>{{$enquiry->phone}}</td>
+                                        <td>{{$enquiry->email}}</td>
+                                        <td>{{$enquiry->city}}</td>
+                                        <td>{{$enquiry->state}}</td>
+                                        <td>{!!$enquiry->message!!}</td>
+                                        <td>{{$enquiry->created_at}}</td>
                                         <td>
-                                            <img src="{{asset('upload_image/category/'.$category->image)}}" class="rounded-circle p-1 border" width="45" height="45" alt="...">
-                                        </td>
-                                        <td>{!!$category->description!!}</td>
-                                        <td>{{$category->created_at}}</td>
-                                        <td>
-                                            <a href="{{route('category_form',['type'=>'edit','id'=>$category->id])}}">
-                                                <i class="text-primary" data-feather="edit"></i>
-                                            </a>
-                                            <a  data-bs-toggle="modal" data-bs-target="#deleteModal{{ $category->id }}" href="#">
+                                            <a  data-bs-toggle="modal" data-bs-target="#deleteModal{{ $enquiry->id }}" href="#">
                                                 <i class="text-primary" data-feather="trash-2"></i>
                                             </a>
-                                            <x-admin.modal type="category" id="{{ $category->id }}" />
+                                            <x-admin.modal type="enquiry" id="{{ $enquiry->id }}" />
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
-                            {{-- <tfoot>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Position</th>
-                                    <th>Office</th>
-                                    <th>Age</th>
-                                    <th>Start date</th>
-                                    <th>Salary</th>
-                                </tr>
-                            </tfoot> --}}
                         </table>
                     </div>
                 </div>

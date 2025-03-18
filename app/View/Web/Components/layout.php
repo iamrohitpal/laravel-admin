@@ -1,6 +1,6 @@
 <?php
 
-namespace App\View\Admin\Components;
+namespace App\View\Web\Components;
 
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -11,9 +11,7 @@ class layout extends Component
     /**
      * Create a new component instance.
      */
-    public function __construct(
-        public string $type = 'dashboard'
-    )
+    public function __construct()
     {
         //
     }
@@ -23,6 +21,6 @@ class layout extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('admin.components.layout');
+        return view('web.components.layout');
     }
 }

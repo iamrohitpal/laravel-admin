@@ -17,11 +17,10 @@ class RoleCheck
      */
     public function handle(Request $request, Closure $next)
     {
-        if(Auth::guard('admin')->user()){
+        if(Auth::guard('admin')->user()) {
             return $next($request); 
         }
-        else{
-            return response()->json(['message' => 'Unauthorised Access!']);
-        } 
+
+        return response()->json(['message' => 'Unauthorised Access!']);
     }
 }

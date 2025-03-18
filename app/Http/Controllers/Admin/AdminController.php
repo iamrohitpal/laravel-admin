@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Permission;
 use App\Models\User;
 use App\Models\Help;
 use App\Models\Blog;
@@ -13,7 +14,7 @@ use App\Models\News;
 use App\Models\Gallery;
 use App\Models\Testing_lab;
 use App\Models\Contactus;
-use App\Models\Products;
+use App\Models\Product;
 use App\Models\Aboutus;
 use App\Models\Infrastructure;
 use App\Models\Certification;
@@ -29,25 +30,46 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        return view('admin.index');
+        if (! Permission::getPermissionBySlugAndId('Dashboard')) {
+            abort(403);
+        }
+
+        $data['totalCategories'] = Category::where('cat_id', '0')->count();
+        $data['totalSubCategories'] = Category::where('cat_id', '!=',  '0')->count();
+        $data['totalProducts'] = Product::where('status', '1')->count();
+        $data['totalenquiries'] = Product::where('status', '1')->count();
+        return view('admin.index', compact('data'));
     }
 
     public function profile(Request $request)
     {
         $data['user'] = User::first();
-        return view('Admin.Profile.profile', compact('data'));
+        return view('admin.profile.edit', compact('data'));
     }
 
     public function update_profile(Request $request)
     {
-        $update_data = User::where('id', $request->user_id)->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            // 'insa_link' => $request->instagram ?? '',
-            // 'faceb_link' => $request->facebook ?? '',
-            // 'twitt_link' => $request->linkedin ?? '',
-            // 'linked_link' => $request->twitter ?? '',
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required',
         ]);
+
+        $userData = User::where('id', $request->user_id)->first();
+        
+        if ($userData['password'] != $request->password){
+            $update_data = User::where('id', $request->user_id)->update([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+        } else {
+            $update_data = User::where('id', $request->user_id)->update([
+                'name' => $request->name,
+                'email' => $request->email,
+            ]);            
+        }
+
+
         if (!empty($update_data)) {
             return redirect()->back()->with('success', 'Profile Updated Successfully!');
         } else {
@@ -326,230 +348,6 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Somthing went wrong!');
         }
     }
-    public function category_list()
-    {
-        $data['category'] = Category::where('cat_id', '0')->get();
-        return view('admin.category.index', compact('data'));
-    }
-    public function category_form($type, $id)
-    {
-        $data = Category::where('id', $id)->first();
-        return view('Admin.Category.editview', compact('data'));
-    }
-    public function save_category(Request $request)
-    {
-        $validate = $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            // 'cat_id' => 'required',
-        ]);
-
-        if (!empty($request->image)) {
-            $image = $this->fileupload($request->image, 'category');
-        } else {
-            $image = $request->old_image;
-        }
-        $string = strtolower($request->name);
-        $string = preg_replace('/[^a-z0-9]+/', '-', $string);
-        $add_data = Category::updateOrCreate(['id' => $request->id], [
-            'name' => $request->name,
-            'image' => $image,
-            'description' => $request->description,
-            'slug' => $string,
-            'cat_id' => $request->cat_id ?? '0',
-        ]);
-        if (!empty($add_data)) {
-            return redirect()->route('category_list')->with('success', 'Category Added Successfully!');
-        } else {
-            return redirect()->back()->with('error', 'Something went erong!');
-        }
-    }
-    public function subcategory_list()
-    {
-        $data['subcategory'] = Category::where('cat_id', '!=', '0')->get();
-        foreach ($data['subcategory'] as $key => $value) {
-            $category = Category::where('id', $value->cat_id)->first();
-            $data['subcategory'][$key]['category'] = $category['name'];
-        }
-        return view('Admin.Subcategory.listview', compact('data'));
-    }
-    public function subcategory_form($type, $id)
-    {
-        $data['cat_edit_data'] = Category::where('id', $id)->first();
-        $data['category'] = Category::where('cat_id', '0')->get();
-        return view('Admin.Subcategory.editview', compact('data'));
-    }
-    public function subscribe_emails()
-    {
-        $data['subscribe_emails'] = DB::table('subscribe_emails')->get();
-        return view('Admin.subscribe_email.listview', compact('data'));
-    }
-    public function save_subcategory(Request $request)
-    {
-        $validate = $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'cat_id' => 'required',
-        ]);
-
-        if (!empty($request->image)) {
-            $image = $this->fileupload($request->image, 'category');
-        } else {
-            $image = $request->old_image;
-        }
-        $string = strtolower($request->name);
-        $string = preg_replace('/[^a-z0-9]+/', '-', $string);
-        $add_data = Category::updateOrCreate(['id' => $request->id], [
-            'name' => $request->name,
-            'image' => $image,
-            'description' => $request->description,
-            'cat_id' => $request->cat_id,
-            'slug' => $string,
-        ]);
-        if (!empty($add_data)) {
-            return redirect()->route('subcategory_list')->with('success', 'Category Added Successfully!');
-        } else {
-            return redirect()->back()->with('error', 'Something went erong!');
-        }
-    }
-    public function infrastructure_list(Request $request)
-    {
-        $data['infrastructure'] = Infrastructure::get();
-        // dd($data);
-        return view('Admin.Infrastructure.listview', compact('data'));
-    }
-    public function infrastructure_form($type, $id)
-    {
-        $data = Infrastructure::where('id', $id)->first();
-        return view('Admin.Infrastructure.editview', compact('data'));
-    }
-    public function save_infrastructure(Request $request)
-    {
-        $add_gallary = $request->validate([
-            // 'f_image' => 'required',
-            // 's_image' => 'required',
-            // 't_image' => 'required',
-            // 'description' => 'required',
-        ]);
-        if (!empty($request->f_image) && !empty($request->s_image)) {
-            $filename1 = $this->fileupload($request->f_image, 'infrastructure');
-            $filename2 = $this->fileupload($request->s_image, 'infrastructure');
-            $add_gallary = Infrastructure::updateOrCreate(['id' => $request->id], [
-                'f_image' => $filename1,
-                's_image' => $filename2,
-                // 't_image' => $filename3,
-                'description' => $request->description,
-            ]);
-        } else {
-            $add_gallary = Infrastructure::updateOrCreate(['id' => $request->id], [
-                'description' => $request->description,
-            ]);
-        }
-
-        if (!empty($add_gallary)) {
-            return redirect()->route('infrastructure_list')->with('success', 'Image Added Successfully!');
-        } else {
-            return back()->with('error', 'Something went wrong!');
-        }
-    }
-
-    public function product_list()
-    {
-        $data['product'] = Products::where('is_deleted', '0')->get();
-        return view('Admin.Product.listview', compact('data'));
-    }
-    public function product_form($type, $id)
-    {
-        $data['product'] = Products::where('id', $id)->first();
-        $data['products'] = DB::table('product_specification')->where('product_id', $id)->first();
-        $data['subcategory'] = Category::where('cat_id', '!=', '0')->get();
-        return view('Admin.Product.editview', compact('data'));
-    }
-    public function save_product(Request $request)
-    {
-        $validation = $request->validate([
-            'subcategory_id' => 'required',
-            'name' => 'required',
-            'description' => 'required',
-            'long_description' => 'required',
-        ]);
-
-        if ($request->has('image1')) {
-            $filename1 = $this->fileupload($request->image1, 'product');
-        } else {
-            $filename1 = $request->old_image1;
-        }
-        if ($request->has('image2')) {
-            $filename2 = $this->fileupload($request->image2, 'product');
-        } else {
-            $filename2 = $request->old_image2 ?? null;
-        }
-        if ($request->has('image3')) {
-            $filename3 = $this->fileupload($request->image3, 'product');
-        } else {
-            $filename3 = $request->old_image3 ?? null;
-        }
-
-        $string = strtolower($request->name);
-        $string = preg_replace('/[^a-z0-9]+/', '-', $string);
-
-        $add_data = Products::updateOrCreate(['id' => $request->id], [
-            'subcategory_id' => $request->subcategory_id,
-            'name' => $request->name,
-            'slug' => $string,
-            'image1' => $filename1,
-            'image2' => $filename2,
-            'image3' => $filename3,
-            'description' => $request->description,
-            'long_description' => $request->long_description,
-        ]);
-        // dd($request);
-        if (empty($request->specification_id)) {
-            $product = Products::latest()->first();
-            $data = DB::table('product_specification')->insert([
-                'product_id' => $product->id,
-                'purity' => $request->purity,
-                'natural_admixture' => $request->natural_admixture,
-                'delivery_time' => $request->delivery_time,
-                'moisture' => $request->moisture,
-                'broken_grain' => $request->broken_grain,
-                'immature_grain' => $request->immature_grain,
-                'damage_discolour_grain' => $request->damage_discolour_grain,
-                'foreign_matter' => $request->foreign_matter,
-                'average_grain_length' => $request->average_grain_length,
-                'supply_ability' => $request->supply_ability,
-                'main_export_market_s' => $request->main_export_market_s,
-                'packaging_type' => $request->packaging_type,
-            ]);
-        } else {
-            $data = DB::table('product_specification')->where('id', $request->specification_id)->update([
-                'product_id' => $request->id,
-                'purity' => $request->purity,
-                'natural_admixture' => $request->natural_admixture,
-                'delivery_time' => $request->delivery_time,
-                'moisture' => $request->moisture,
-                'broken_grain' => $request->broken_grain,
-                'immature_grain' => $request->immature_grain,
-                'damage_discolour_grain' => $request->damage_discolour_grain,
-                'foreign_matter' => $request->foreign_matter,
-                'average_grain_length' => $request->average_grain_length,
-                'supply_ability' => $request->supply_ability,
-                'main_export_market_s' => $request->main_export_market_s,
-                'packaging_type' => $request->packaging_type,
-            ]);
-        }
-
-        if (!empty($add_data)) {
-            return redirect()->route('product_list')->with('success', 'Data Added Successfully!');
-        } else {
-            return redirect()->back()->with('error', 'Somthing went wrong!');
-        }
-    }
-    public function enquiry_list()
-    {
-        $data['enquiry'] = Enquiry::where('is_deleted', '0')->where('state', '!=', '')->get();
-        return view('Admin.Enquiry.listview', compact('data'));
-    }
 
     public function product_enquiry_list()
     {
@@ -605,17 +403,34 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Somthing went wrong!');
         }
     }
-    public function fileupload($file, $type)
+
+    public function fileupload($file, $type, $id = null)
     {
-        $path = "public/upload_image/" . $type;
+        $path = "upload_image/" . $type;
+        
         if (file_exists($path)) {
+            
             $filename = time() . '-' . $type . '-' . $file->getClientOriginalName();
             $file->move($path, $filename);
+            if ($id) {
+                DB::table('images')->insert([
+                 'product_id' => $id,
+                 'name' => $filename,
+                ]);
+            }
+            
             return $filename;
         } else {
             mkdir($path, 0777, true);
             $filename = time() . '-' . $type . '-' . $file->getClientOriginalName();
             $file->move($path, $filename);
+            if ($id) {
+                DB::table('images')->insert([
+                 'product_id' => $id,
+                 'name' => $filename,
+                ]);
+            }
+
             return $filename;
         }
     }
@@ -625,7 +440,7 @@ class AdminController extends Controller
     {
         $buy = Buy::where('is_deleted', '0')->get();
         $data = $buy->map(function ($item) {
-            $item->product = Products::where('id', $item->product_id)->first();
+            $item->product = Product::where('id', $item->product_id)->first();
             return $item;
         });
 
@@ -640,7 +455,7 @@ class AdminController extends Controller
 
         $sell = Sell::where('is_deleted', '0')->get();
         $data = $sell->map(function ($item) {
-            $item->product = Products::where('id', $item->product_id)->first();
+            $item->product = Product::where('id', $item->product_id)->first();
             return $item;
         });
         return view('Admin.Sell.listview', compact('data'));
@@ -697,7 +512,7 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'Something went wrong!');
             }
         } elseif ($type == 'product') {
-            $delete_data = Products::where('id', $id)->first();
+            $delete_data = Product::where('id', $id)->first();
             if (!empty($delete_data)) {
                 $delete_data->delete();
                 return redirect()->route('product_list')->with('success', 'Product Data Deleted Successfully!');
