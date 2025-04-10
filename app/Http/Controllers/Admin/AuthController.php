@@ -11,11 +11,6 @@ use Auth;
 class AuthController extends Controller
 {
     public function loginForm(){
-        // User::create([
-        //     'name' => 'Admin',
-        //     'email' => 'admin@gmail.com',
-        //     'password' => Hash::make('123456'),
-        // ]);
         return view('admin.auth.login');
     }
 

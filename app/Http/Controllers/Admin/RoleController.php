@@ -5,17 +5,25 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use Illuminate\Http\Request;
-use App\Models\User;
 use App\Models\Role;
-use Auth;
-use Hash;
-use DB;
 
 class RoleController extends Controller
 {
+    private bool $list;
+    private bool $create;
+    private bool $edit;
+    private bool $delete;
+    public function __construct()
+    {
+        $this->list = Permission::getPermissionBySlugAndId('Product');
+        $this->create = Permission::getPermissionBySlugAndId('Product', 'Create');
+        $this->edit = Permission::getPermissionBySlugAndId('Product', 'Edit');
+        $this->delete = Permission::getPermissionBySlugAndId('Product', 'Delete');
+    }
+
     public function role_list()
     {
-        if (! Permission::getPermissionBySlugAndId('Role')) {
+        if (! $this->list) {
             abort(403);
         }
 
@@ -26,7 +34,8 @@ class RoleController extends Controller
 
     public function role_form($type, $id)
     {
-        if (! Permission::getPermissionBySlugAndId('Role')) {
+        $permission = ($id == '0') ? $this->create : $this->edit;
+        if (! $this->list || ! $permission) {
             abort(403);
         }
 
@@ -42,12 +51,13 @@ class RoleController extends Controller
 
     public function save_role(Request $request)
     {
-        if (! Permission::getPermissionBySlugAndId('Role')) {
+        $permission = ($request->id == '0') ? $this->create : $this->edit;
+        if (! $this->list || ! $permission) {
             abort(403);
         }
-
+        $id = ($request->id == 0) ? null : $request->id;
         $validate = $request->validate([
-            'name' => 'required|unique:roles,name,'.$request->id,
+            'name' => 'required|unique:roles,name,'.$id,
             'permission_type' => 'required',
         ]);
 

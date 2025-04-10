@@ -1,6 +1,5 @@
 ia<x-admin.layout type="enquiry">
-    <!--start page wrapper -->
-    <div class="page-wrapper">
+
         <div class="page-content">
             <!--breadcrumb-->
             <div
@@ -73,6 +72,5 @@ ia<x-admin.layout type="enquiry">
                 </div>
             </div>
         </div>
-    </div>
-    <!--end page wrapper -->
+
 </x-admin.layout>

@@ -2,19 +2,32 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Client\Request;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Models\Category;
+use App\Traits\GlobalDeleteTrait;
 use App\Traits\UploadFileTrait;
 
 class SubCategoryController extends Controller
 {
+    use GlobalDeleteTrait;
     use UploadFileTrait;
-    
+    private bool $list;
+    private bool $create;
+    private bool $edit;
+    private bool $delete;
+    public function __construct()
+    {
+        $this->list = Permission::getPermissionBySlugAndId('Product');
+        $this->create = Permission::getPermissionBySlugAndId('Product', 'Create');
+        $this->edit = Permission::getPermissionBySlugAndId('Product', 'Edit');
+        $this->delete = Permission::getPermissionBySlugAndId('Product', 'Delete');
+    }
+
     public function subcategory_list()
     {
-        if (! Permission::getPermissionBySlugAndId('Sub Category')) {
+        if (! $this->list) {
             abort(403);
         }
 
@@ -28,39 +41,35 @@ class SubCategoryController extends Controller
             }
             $data['subcategory'][$key]['category'] = implode(' | ', $catName);
         }
+
         return view('admin.subcategory.index', compact('data'));
     }
 
     public function subcategory_form($type, $id)
     {
-        if (! Permission::getPermissionBySlugAndId('Sub Category')) {
+        $permission = ($id == '0') ? $this->create : $this->edit;
+        if (! $this->list || ! $permission) {
             abort(403);
         }
 
         $data['cat_edit_data'] = Category::where('status', '1')->where('id', $id)->first();
         $data['category'] = Category::where('status', '1')->where('cat_id', '0')->get();
+
         return view('admin.subcategory.edit', compact('data'));
     }
 
     public function save_subcategory(Request $request)
     {
-        if (! Permission::getPermissionBySlugAndId('Sub Category')) {
+        $permission = ($request->id == '0') ? $this->create : $this->edit;
+        if (! $this->list || ! $permission) {
             abort(403);
         }
-
-        if ($request->id == '0') {
-            $validate = $request->validate([
-                'name' => 'required|unique:categories',
-                'description' => 'required',
-                'cat_id' => 'required',
-            ]);
-        } else {
-            $validate = $request->validate([
-                'name' => 'required',
-                'description' => 'required',
-                'cat_id' => 'required',
-            ]);
-        }
+        $id = ($request->id == 0) ? null : $request->id;
+        $validate = $request->validate([
+            'name' => 'required|unique:categories,name'.$id,
+            'description' => 'required',
+            'cat_id' => 'required',
+        ]);
 
         if (!empty($request->image)) {
             $image = $this->fileupload($request->image, 'category');

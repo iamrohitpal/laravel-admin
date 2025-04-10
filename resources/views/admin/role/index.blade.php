@@ -1,6 +1,5 @@
 <x-admin.layout type="role">
-    <!--start page wrapper -->
-    <div class="page-wrapper">
+
         <div class="page-content">
             <!--breadcrumb-->
             <div
@@ -41,7 +40,7 @@
                     <div class="table-responsive">
                         <table
                             id="example"
-                            class="table table-striped table-bordered"
+                            class="table data-table table-bordered"
                             style="width: 100%"
                         >
                             <thead>
@@ -79,6 +78,5 @@
                 </div>
             </div>
         </div>
-    </div>
-    <!--end page wrapper -->
+
 </x-admin.layout>

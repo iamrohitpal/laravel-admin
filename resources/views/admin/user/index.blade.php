@@ -1,6 +1,5 @@
 <x-admin.layout type="user">
-    <!--start page wrapper -->
-    <div class="page-wrapper">
+
         <div class="page-content">
             <!--breadcrumb-->
             <div
@@ -85,6 +84,5 @@
                 </div>
             </div>
         </div>
-    </div>
-    <!--end page wrapper -->
+
 </x-admin.layout>

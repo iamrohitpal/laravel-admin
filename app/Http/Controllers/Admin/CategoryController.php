@@ -2,51 +2,62 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Client\Request;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Models\Category;
+use App\Traits\GlobalDeleteTrait;
 use App\Traits\UploadFileTrait;
 
 class CategoryController extends Controller
 {
     use UploadFileTrait;
+    use GlobalDeleteTrait;
+    private bool $list;
+    private bool $create;
+    private bool $edit;
+    private bool $delete;
+    public function __construct()
+    {
+        $this->list = Permission::getPermissionBySlugAndId('Category');
+        $this->create = Permission::getPermissionBySlugAndId('Category', 'Create');
+        $this->edit = Permission::getPermissionBySlugAndId('Category', 'Edit');
+        $this->delete = Permission::getPermissionBySlugAndId('Category', 'Delete');
+    }
 
     public function category_list()
     {
-        if (! Permission::getPermissionBySlugAndId('Category')) {
+        if (! $this->list) {
             abort(403);
         }
 
         $data['category'] = Category::where('status', '1')->where('cat_id', '0')->get();
+
         return view('admin.category.index', compact('data'));
     }
     public function category_form($type, $id)
     {
-        if (! Permission::getPermissionBySlugAndId('Category')) {
+        $permission = ($id == '0') ? $this->create : $this->edit;
+        if (! $this->list || ! $permission) {
             abort(403);
         }
 
         $data = Category::where('status', '1')->where('id', $id)->first();
+
         return view('admin.category.edit', compact('data'));
     }
     public function save_category(Request $request)
     {
-        if (! Permission::getPermissionBySlugAndId('Category')) {
+        $permission = ($request->id == '0') ? $this->create : $this->edit;
+        if (! $this->list || ! $permission) {
             abort(403);
         }
-        
-        if ($request->id == '0') {
-            $validate = $request->validate([
-                'name' => 'required|unique:categories',
-                'description' => 'required',
-            ]);
-        } else {
-            $validate = $request->validate([
-                'name' => 'required',
-                'description' => 'required',
-            ]);
-        }
+        $id = ($request->id == 0) ? null : $request->id;
+
+        $validate = $request->validate([
+            'name' => 'required|unique:categories,name,' . $id,
+            'description' => 'required',
+        ]);
 
         if (!empty($request->image)) {
             $image = $this->fileupload($request->image, 'category');

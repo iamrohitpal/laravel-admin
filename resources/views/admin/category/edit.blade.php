@@ -1,8 +1,7 @@
 <x-admin.layout type="category">
     <link href="{{asset('admin/assets/plugins/select2/css/select2.min.css')}}" rel="stylesheet" />
 	<link href="{{asset('admin/assets/plugins/select2/css/select2-bootstrap4.css')}}" rel="stylesheet" />
-    <!--start page wrapper -->
-    <div class="page-wrapper">
+
         <div class="page-content">
             <!--breadcrumb-->
             <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
@@ -30,38 +29,17 @@
                                 @csrf
                                 <div class="col-12">
                                     <label for="inputFirstName" class="form-label">Category Name</label>
-                                    <input type="text" name="name" class="form-control" value="{{$data['name'] ?? ''}}" placeholder="Category Name..." id="inputFirstName">
+                                    <input type="text" name="name" class="form-control" value="{{$data['name'] ?? old('name') ?? ''}}" placeholder="Category Name..." id="inputFirstName">
                                     <input type="hidden" name="id" value="{{$data['id'] ?? '0'}}">
                                 </div>
-                                {{-- <div class="col-12">
-                                    <label class="form-label">Select2 Text Control</label>
-                                    <select class="single-select form-control">
-                                        <option value="" selected disabled >--Select Category--</option>
-                                        <option value="United States">United States</option>
-                                        <option value="United Kingdom">United Kingdom</option>
-                                        <option value="Afghanistan">Afghanistan</option>
-                                        <option value="Aland Islands">Aland Islands</option>
-                                        <option value="Albania">Albania</option>
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">Select2 Text Control</label>
-                                    <select class="multiple-select form-control" multiple>
-                                        <option value="United States">United States</option>
-                                        <option value="United Kingdom">United Kingdom</option>
-                                        <option value="Afghanistan">Afghanistan</option>
-                                        <option value="Aland Islands">Aland Islands</option>
-                                        <option value="Albania">Albania</option>
-                                    </select>
-                                </div> --}}
                                 <div class="col-12">
                                     <label for="inputAddress2" class="form-label">Upload Image</label>
                                     <input type="file" name="image" class="form-control" id="formFile" >
-                                    <input type="hidden" name="old_image" value="{{$data['image'] ?? ''}}">
+                                    <input type="hidden" name="old_image" value="{{$data['image'] ?? old('image')  ?? ''}}">
                                 </div>
                                 <div class="col-12">
                                     <label for="inputAddress2" class="form-label">Description</label>
-                                    <textarea name="description" class="form-control" id="mytextarea" placeholder="Description..." rows="5">{{$data['description'] ?? ''}}</textarea>
+                                    <textarea name="description" class="form-control" id="mytextarea" placeholder="Description..." rows="5">{{$data['description'] ?? old('description')  ?? ''}}</textarea>
                                 </div>
                                 <div class="col-2">
                                     <button type="submit" class="btn btn-primary px-5">Submit</button>

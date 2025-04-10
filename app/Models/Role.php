@@ -17,7 +17,7 @@ class Role extends Model
     {
         $permission = Role::where('id', Auth::user()->role_id)->first();
 
-        if (empty($permission['permissions']) || in_array($id, explode(',', $permission['permissions']))) {
+        if (in_array($id, explode(',', $permission['permissions'])) || empty($permission['permissions'])) {
             return true;
         }
 

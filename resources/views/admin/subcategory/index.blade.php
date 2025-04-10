@@ -1,6 +1,9 @@
 <x-admin.layout type="subCategory">
-    <!--start page wrapper -->
-    <div class="page-wrapper">
+    @php
+        $create = App\Models\Permission::getPermissionBySlugAndId('Sub Category', 'Create');
+        $edit = App\Models\Permission::getPermissionBySlugAndId('Sub Category', 'Edit');
+        $delete = App\Models\Permission::getPermissionBySlugAndId('Sub Category', 'Delete');
+    @endphp
         <div class="page-content">
             <!--breadcrumb-->
             <div
@@ -25,6 +28,7 @@
                     </nav>
                 </div>
                 <div class="ms-auto">
+                    @if ($create)
                     <div class="btn-group">
                         <a href="{{route('subcategory_form',['type' => 'create', 'id' => '0'])}}">
                             <button type="button" class="btn btn-primary">
@@ -32,6 +36,7 @@
                             </button>
                         </a>
                     </div>
+                    @endif
                 </div>
             </div>
             <!--end breadcrumb-->
@@ -52,7 +57,9 @@
                                     <th>Image</th>
                                     <th>Description</th>
                                     <th>Created Date</th>
+                                    @if ($edit || $delete)
                                     <th>Action</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -66,15 +73,21 @@
                                         </td>
                                         <td>{!!$category->description!!}</td>
                                         <td>{{$category->created_at}}</td>
+                                        @if ($edit || $delete)
                                         <td>
+                                            @if ($edit)
                                             <a href="{{route('subcategory_form',['type'=>'edit','id'=>$category->id])}}">
                                                 <i class="text-primary" data-feather="edit"></i>
                                             </a>
+                                            @endif
+                                            @if ($delete)
                                             <a  data-bs-toggle="modal" data-bs-target="#deleteModal{{ $category->id }}" href="#">
                                                 <i class="text-primary" data-feather="trash-2"></i>
                                             </a>
+                                            @endif
                                             <x-admin.modal type="category" id="{{ $category->id }}" />
                                         </td>
+                                        @endif
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -93,6 +106,5 @@
                 </div>
             </div>
         </div>
-    </div>
-    <!--end page wrapper -->
+
 </x-admin.layout>

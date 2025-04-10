@@ -28,9 +28,21 @@ use DB;
 
 class AdminController extends Controller
 {
+    private bool $list;
+    private bool $create;
+    private bool $edit;
+    private bool $delete;
+    public function __construct()
+    {
+        $this->list = Permission::getPermissionBySlugAndId('Dashboard');
+        $this->create = Permission::getPermissionBySlugAndId('Dashboard', 'Create');
+        $this->edit = Permission::getPermissionBySlugAndId('Dashboard', 'Edit');
+        $this->delete = Permission::getPermissionBySlugAndId('Dashboard', 'Delete');
+    }
+
     public function dashboard()
     {
-        if (! Permission::getPermissionBySlugAndId('Dashboard')) {
+        if (! $this->list) {
             abort(403);
         }
 
@@ -41,117 +53,11 @@ class AdminController extends Controller
         return view('admin.index', compact('data'));
     }
 
-    public function profile(Request $request)
-    {
-        $data['user'] = User::first();
-        return view('admin.profile.edit', compact('data'));
-    }
-
-    public function update_profile(Request $request)
-    {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required',
-        ]);
-
-        $userData = User::where('id', $request->user_id)->first();
-        
-        if ($userData['password'] != $request->password){
-            $update_data = User::where('id', $request->user_id)->update([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-            ]);
-        } else {
-            $update_data = User::where('id', $request->user_id)->update([
-                'name' => $request->name,
-                'email' => $request->email,
-            ]);            
-        }
-
-
-        if (!empty($update_data)) {
-            return redirect()->back()->with('success', 'Profile Updated Successfully!');
-        } else {
-            return redirect()->back()->wih('error', 'Something went wrong!');
-        }
-    }
-
-    public function change_password(Request $request)
-    {
-        $validated = $request->validate([
-            'old_password' => 'required',
-            'new_password' => 'required_with:password_confirmation|same:password_confirmation',
-            'password_confirmation' => 'min:6'
-        ]);
-
-        $data_check = User::where('id', $request->user_id)->first();
-
-        if (Hash::check($request->old_password, $data_check->password)) {
-            if ($request->old_password == $request->new_password) {
-                return redirect()->back()->with('error', 'Old Password and New Password Can not be same!');
-            } else {
-                $update_data = User::where('id', $request->user_id)->update([
-                    'password' => Hash::make($request->new_password),
-                ]);
-                if (!empty($update_data)) {
-                    return redirect()->back()->with('success', 'Password Updated Successfully!');
-                } else {
-                    return redirect()->back()->with('error', 'Something went wring!');
-                }
-            }
-        } else {
-            return redirect()->back()->with('error', 'Old Password is not Correct!');
-        }
-    }
     public function help(Request $request)
     {
         $data['help'] = Help::where('is_deleted', '0')->get();
         return view('Admin.Help.help', compact('data'));
     }
-
-    //============ Blog Section Crud ====================//
-    public function blogs(Request $request)
-    {
-        $data['blog_data'] = Blog::where('is_deleted', '0')->get();
-        return view('Admin.Blog.listview', compact('data'));
-    }
-    public function blog_form($type, $id)
-    {
-        $data = Blog::where('id', $id)->first();
-        return view('Admin.Blog.editview', compact('data'));
-    }
-    public function save_blog(Request $request)
-    {
-        $validate = $request->validate([
-            'title' => 'required',
-            'description' => 'required',
-        ]);
-
-        // dd($request->all());
-
-        if (empty($request->file)) {
-            $filename = $request->old_file;
-        } else {
-            $filename = $this->fileupload($request->file, 'blog');
-        }
-
-        $string = strtolower($request->title);
-        $string = preg_replace('/[^a-z0-9]+/', '-', $string);
-        // dd($string, $request);
-        $addBlog = Blog::updateOrCreate(['id' => $request->id], [
-            'title' => $request->title,
-            'file' => $filename,
-            'slug' => $string,
-            'description' => $request->description,
-        ]);
-        if (!empty($addBlog)) {
-            return redirect()->route('blog_list')->with('success', 'Data Added Successfully!');
-        } else {
-            return back()->with('error', 'Something went wrong!');
-        }
-    }
-    //============ Blog Section Crud ====================//
 
     //============ News Section Crud ====================//
     public function news(Request $request)
@@ -462,105 +368,6 @@ class AdminController extends Controller
     }
     //============ Sell Section  ============//
 
-    public function delete_data(Request $request, $type, $id)
-    {
-        if ($type == 'blog') {
-            $delete_blog = Blog::where('id', $id)->first();
-            if (!empty($delete_blog)) {
-                $delete_blog->delete();
-                return redirect()->route('blog_list')->with('success', 'Blog Deleted Successfully!');
-            } else {
-                return back()->with('error', 'Data Not Available!');
-            }
-        } elseif ($type == 'gallery') {
-            $delete_gallery = Gallery::where('id', $id)->first();
-            if (!empty($delete_gallery)) {
-                $delete_gallery->delete();
-                return redirect()->route('gallery_list')->with('success', 'Gallery Image Deleted Successfully!');
-            } else {
-                return back()->with('error', 'Data Not Available!');
-            }
-        } elseif ($type == 'certificate') {
-            $delete_certificate = Certification::where('id', $id)->first();
-            if (!empty($delete_certificate)) {
-                $delete_certificate->delete();
-                return redirect()->route('certificate_list')->with('success', 'Certificate Data Deleted Successfully!');
-            } else {
-                return back()->with('error', 'Data Not Available!');
-            }
-        } elseif ($type == 'category') {
-            $delete_data = Category::where('id', $id)->first();
-            $sub_cat = Category::where('cat_id', $id)->get();
-            if (!empty($delete_data)) {
-                if ($sub_cat) {
-                    foreach ($sub_cat as $val) {
-                        $delete_cat = Category::where('id', $val->id)->first();
-                        $delete_cat->delete();
-                    }
-                }
-                $delete_data->delete();
-                return redirect()->route('category_list')->with('success', 'Category Data Deleted Successfully!');
-            } else {
-                return redirect()->back()->with('error', 'Something went wrong!');
-            }
-        } elseif ($type == 'subcateory') {
-            $delete_data = Category::where('id', $id)->first();
-            if (!empty($delete_data)) {
-                $delete_data->delete();
-                return redirect()->route('subcategory_list')->with('success', 'Sub Category Data Deleted Successfully!');
-            } else {
-                return redirect()->back()->with('error', 'Something went wrong!');
-            }
-        } elseif ($type == 'product') {
-            $delete_data = Product::where('id', $id)->first();
-            if (!empty($delete_data)) {
-                $delete_data->delete();
-                return redirect()->route('product_list')->with('success', 'Product Data Deleted Successfully!');
-            } else {
-                return redirect()->back()->with('error', 'Something went wrong!');
-            }
-        } elseif ($type == 'infrastructure') {
-            $delete_data = Infrastructure::where('id', $id)->first();
-            if (!empty($delete_data)) {
-                $delete_data->delete();
-                return redirect()->route('infras_list')->with('success', 'Infrastructure Data Deleted Successfully!');
-            } else {
-                return redirect()->back()->with('error', 'Something went wrong!');
-            }
-        } elseif ($type == 'enquiry') {
-            $delete_data = Enquiry::where('id', $id)->first();
-            if (!empty($delete_data)) {
-                $delete_data->delete();
-                return redirect()->route('enquiry_list')->with('success', 'Enquiry Data Deleted Successfully!');
-            } else {
-                return redirect()->back()->with('error', 'Something went wrong!');
-            }
-        } elseif ($type == 'testing_lab') {
-            $delete_data = Testing_lab::where('id', $id)->first();
-            if (!empty($delete_data)) {
-                $delete_data->delete();
-                return redirect()->route('testing_lab_list')->with('success', 'Testing Lab Data Deleted Successfully!');
-            } else {
-                return redirect()->back()->with('error', 'Something went wrong!');
-            }
-        } elseif ($type == 'news') {
-            $delete_data = News::where('id', $id)->first();
-            if (!empty($delete_data)) {
-                $delete_data->delete();
-                return redirect()->route('news_list')->with('success', 'News Data Deleted Successfully!');
-            } else {
-                return redirect()->back()->with('error', 'Something went wrong!');
-            }
-        } elseif ($type == 'seo') {
-            $delete_data = Seo::where('id', $id)->first();
-            if (!empty($delete_data)) {
-                $delete_data->delete();
-                return redirect()->route('seo_list')->with('success', 'Seo Data Deleted Successfully!');
-            } else {
-                return redirect()->back()->with('error', 'Something went wrong!');
-            }
-        }
-    }
     public function logout()
     {
         Auth::guard('admin')->logout();

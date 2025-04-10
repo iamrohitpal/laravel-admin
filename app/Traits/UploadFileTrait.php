@@ -14,7 +14,11 @@ trait UploadFileTrait
             mkdir($path, 0777, true);
         }
 
-        $filename = time() . '-' . $type . '-' . $file->getClientOriginalName();
+        $originalName = $file->getClientOriginalName();
+        $cleanName = str_replace(' ', '-', $originalName);
+        $cleanName = preg_replace('/[^A-Za-z0-9\.\-]/', '', $cleanName);
+
+        $filename = time() . '-' . $type . '-' . $cleanName;
 
         $file->move($path, $filename);
 

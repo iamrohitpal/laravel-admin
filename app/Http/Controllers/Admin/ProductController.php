@@ -2,21 +2,34 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Client\Request;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Models\Category;
 use App\Models\Product;
+use App\Traits\GlobalDeleteTrait;
 use App\Traits\UploadFileTrait;
 use DB;
 
 class ProductController extends Controller
 {
+    use GlobalDeleteTrait;
     use UploadFileTrait;
-    
+    private bool $list;
+    private bool $create;
+    private bool $edit;
+    private bool $delete;
+    public function __construct()
+    {
+        $this->list = Permission::getPermissionBySlugAndId('Product');
+        $this->create = Permission::getPermissionBySlugAndId('Product', 'Create');
+        $this->edit = Permission::getPermissionBySlugAndId('Product', 'Edit');
+        $this->delete = Permission::getPermissionBySlugAndId('Product', 'Delete');
+    }
+
     public function product_list()
     {
-        if (! Permission::getPermissionBySlugAndId('Product')) {
+        if (! $this->list) {
             abort(403);
         }
 
@@ -35,34 +48,29 @@ class ProductController extends Controller
     }
     public function product_form($type, $id)
     {
-        if (! Permission::getPermissionBySlugAndId('Product')) {
+        $permission = ($id == '0') ? $this->create : $this->edit;
+        if (! $this->list || ! $permission) {
             abort(403);
         }
 
         $data['product'] = Product::where('id', $id)->first();
         $data['images'] = DB::table('images')->where('product_id', $id)->take(5)->latest()->get();
         $data['subcategory'] = Category::where('cat_id', '!=', '0')->get();
+
         return view('admin.product.edit', compact('data'));
     }
     public function save_product(Request $request)
     {
-        if (! Permission::getPermissionBySlugAndId('Product')) {
+        $permission = ($request->id == '0') ? $this->create : $this->edit;
+        if (! $this->list || ! $permission) {
             abort(403);
         }
-
-        if ($request->id == '0') {
-            $validation = $request->validate([
-                'sub_cat_id' => 'required',
-                'name' => 'required|unique:products|unique:categories',
-                'description' => 'required',
-            ]);
-        } else {
-            $validation = $request->validate([
-                'sub_cat_id' => 'required',
-                'name' => 'required',
-                'description' => 'required',
-            ]);
-        }
+        $id = ($request->id == 0) ? null : $request->id;
+        $validation = $request->validate([
+            'sub_cat_id' => 'required',
+            'name' => 'required|unique:products|unique:categories,name,'.$id,
+            'description' => 'required',
+        ]);
 
         $string = strtolower($request->name);
         $string = preg_replace('/[^a-z0-9]+/', '-', $string);

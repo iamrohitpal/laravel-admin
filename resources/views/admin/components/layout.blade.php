@@ -181,7 +181,14 @@
 			</div>
 		</header>
 
-        {{ $slot }}
+		<!--start page wrapper -->
+		<div class="page-wrapper">
+			@include('admin.components.success')
+			@include('admin.components.error')
+
+        	{{ $slot }}
+
+		</div>
 
         <!--start overlay-->
 		<div class="overlay toggle-icon"></div>
@@ -235,7 +242,10 @@
 			remove_trailing_brs: false, // Retain proper HTML structure
 			valid_children: '+body[style|i]', // Ensure valid <i> as child elements
 		});
-		feather.replace()
+		feather.replace();
+		setTimeout(function () {
+            $('.alert-success,.alert-danger').fadeOut('fast');
+        }, 3000);
 	</script>
 
 	<!-- Bootstrap JS -->
@@ -255,7 +265,7 @@
 	<script>
 		$(document).ready(function() {
 			$('#example').DataTable();
-		} );
+		});
 	</script>
 	<!--app JS-->
 	<script src="{{asset('admin/assets/js/app.js')}}"></script>
