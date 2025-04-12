@@ -2,20 +2,25 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Permission;
+use App\Models\User;
 use App\Traits\UploadFileTrait;
 use Hash;
+use Illuminate\Http\Request;
 
 class ProfileController extends Controller
 {
     use UploadFileTrait;
+
     private bool $list;
+
     private bool $create;
+
     private bool $edit;
+
     private bool $delete;
+
     public function __construct()
     {
         $this->list = Permission::getPermissionBySlugAndId('Product');
@@ -27,6 +32,7 @@ class ProfileController extends Controller
     public function profile()
     {
         $data['user'] = User::first();
+
         return view('admin.profile.edit', compact('data'));
     }
 
@@ -38,8 +44,8 @@ class ProfileController extends Controller
         ]);
 
         $userData = User::where('id', $request->user_id)->first();
-        
-        if ($userData['password'] != $request->password){
+
+        if ($userData['password'] != $request->password) {
             $update_data = User::where('id', $request->user_id)->update([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -49,11 +55,10 @@ class ProfileController extends Controller
             $update_data = User::where('id', $request->user_id)->update([
                 'name' => $request->name,
                 'email' => $request->email,
-            ]);            
+            ]);
         }
 
-
-        if (!empty($update_data)) {
+        if (! empty($update_data)) {
             return redirect()->back()->with('success', 'Profile Updated Successfully!');
         } else {
             return redirect()->back()->wih('error', 'Something went wrong!');
@@ -65,7 +70,7 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'old_password' => 'required',
             'new_password' => 'required_with:password_confirmation|same:password_confirmation',
-            'password_confirmation' => 'min:6'
+            'password_confirmation' => 'min:6',
         ]);
 
         $data_check = User::where('id', $request->user_id)->first();
@@ -77,7 +82,7 @@ class ProfileController extends Controller
                 $update_data = User::where('id', $request->user_id)->update([
                     'password' => Hash::make($request->new_password),
                 ]);
-                if (!empty($update_data)) {
+                if (! empty($update_data)) {
                     return redirect()->back()->with('success', 'Password Updated Successfully!');
                 } else {
                     return redirect()->back()->with('error', 'Something went wring!');

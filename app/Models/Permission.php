@@ -8,7 +8,7 @@ class Permission extends Model
 {
     protected $guarded = ['id'];
 
-    static public function getAllPermission()
+    public static function getAllPermission()
     {
         $allPermission = Permission::groupBy('groupby')->get();
         $results = [];
@@ -17,7 +17,7 @@ class Permission extends Model
             $data['id'] = $permission->id;
             $data['name'] = $permission->name;
             $allType = [];
-            foreach ($allData as $allDataByGroup){
+            foreach ($allData as $allDataByGroup) {
                 $allType[] = ['id' => $allDataByGroup->id, 'name' => $allDataByGroup->name];
             }
             $data['permission'] = $allType;
@@ -27,22 +27,22 @@ class Permission extends Model
         return $results;
     }
 
-    static public function getPermissionByGroup($group)
+    public static function getPermissionByGroup($group)
     {
         $allPermission = Permission::where('groupby', $group)->get();
 
         return $allPermission;
     }
 
-    static public function getPermissionBySlugAndId(string $name, string $type = null): bool
+    public static function getPermissionBySlugAndId(string $name, ?string $type = null): bool
     {
         $type = ! empty($type) ? $type : $name;
         $permissionType = Permission::where('slug', $name)->first();
-
+        $allPermission = null;
         if ($permissionType) {
-            $allPermission = Permission::where([ 'slug' => $type, 'groupby' => $permissionType->groupby])->first();
+            $allPermission = Permission::where(['slug' => $type, 'groupby' => $permissionType->groupby])->first();
         }
-        
+
         return Role::HasPermission($allPermission?->id);
     }
 }

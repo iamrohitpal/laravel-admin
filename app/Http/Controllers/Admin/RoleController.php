@@ -4,21 +4,25 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
-use Illuminate\Http\Request;
 use App\Models\Role;
+use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
     private bool $list;
+
     private bool $create;
+
     private bool $edit;
+
     private bool $delete;
+
     public function __construct()
     {
-        $this->list = Permission::getPermissionBySlugAndId('Product');
-        $this->create = Permission::getPermissionBySlugAndId('Product', 'Create');
-        $this->edit = Permission::getPermissionBySlugAndId('Product', 'Edit');
-        $this->delete = Permission::getPermissionBySlugAndId('Product', 'Delete');
+        $this->list = Permission::getPermissionBySlugAndId('Role');
+        $this->create = Permission::getPermissionBySlugAndId('Role', 'Create');
+        $this->edit = Permission::getPermissionBySlugAndId('Role', 'Edit');
+        $this->delete = Permission::getPermissionBySlugAndId('Role', 'Delete');
     }
 
     public function role_list()
@@ -41,8 +45,8 @@ class RoleController extends Controller
 
         $data['role'] = Role::where('id', $id)->first();
         $data['type'] = [
-            'all'    => 'All',
-            'custom' => "Custom",
+            'all' => 'All',
+            'custom' => 'Custom',
         ];
         $data['permission'] = Permission::getAllPermission();
 
@@ -65,7 +69,7 @@ class RoleController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'permission_type' => $request->permission_type,
-            'permissions' => $request->permissions ? implode(',', $request->permissions) : null
+            'permissions' => $request->permissions ? implode(',', $request->permissions) : null,
         ]);
 
         return to_route('role_list')->with('success', 'Role created/updated successfully');

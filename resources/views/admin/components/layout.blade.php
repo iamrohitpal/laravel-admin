@@ -56,6 +56,10 @@
 
 				$product = App\Models\Permission::getPermissionBySlugAndId('Product');
 
+				$blog = App\Models\Permission::getPermissionBySlugAndId('Blog');
+
+				$seo = App\Models\Permission::getPermissionBySlugAndId('Seo');
+
 				$enquiry = App\Models\Permission::getPermissionBySlugAndId('Enquiry');
 
 				$role = App\Models\Permission::getPermissionBySlugAndId('Role');
@@ -100,15 +104,24 @@
 					</a>
 				</li>
 				@endif
-				{{-- @if ($category) --}}
-				{{-- <li class="{{ $type == 'blog' ? 'mm-active' : '' }}">
+				@if ($seo)
+				<li class="{{ $type == 'blog' ? 'mm-active' : '' }}">
 					<a href="{{route('blog_list')}}">
 						<div class="parent-icon"><i class='bx bx-bookmark-heart'></i>
 						</div>
 						<div class="menu-title">Blog</div>
 					</a>
-				</li> --}}
-				{{-- @endif --}}
+				</li>
+				@endif
+				@if ($seo)
+				<li class="{{ $type == 'seo' ? 'mm-active' : '' }}">
+					<a href="{{route('seo_list')}}">
+						<div class="parent-icon"><i class='bx bx-window-alt'></i>
+						</div>
+						<div class="menu-title">Seo</div>
+					</a>
+				</li>
+				@endif
 				@if ($enquiry)
 				<li class="{{ $type == 'enquiry' ? 'mm-active' : '' }}">
 					<a  href="{{route('enquiry_list')}}">

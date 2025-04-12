@@ -2,22 +2,24 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Blog;
 use App\Models\Permission;
 use App\Traits\UploadFileTrait;
-use App\Traits\GlobalDeleteTrait;
-use DB;
+use Illuminate\Http\Request;
 
 class BlogController extends Controller
 {
     use UploadFileTrait;
-    use GlobalDeleteTrait;
+
     private bool $list;
+
     private bool $create;
+
     private bool $edit;
+
     private bool $delete;
+
     public function __construct()
     {
         $this->list = Permission::getPermissionBySlugAndId('Blog');
@@ -28,36 +30,55 @@ class BlogController extends Controller
 
     public function blog_list()
     {
-        $data['blog_data'] = Blog::where('is_deleted', '0')->get();
-        return view('Admin.Blog.listview', compact('data'));
+        if (! $this->list) {
+            abort(403);
+        }
+
+        $data['blogs'] = Blog::get();
+
+        return view('admin.blog.index', compact('data'));
     }
+
     public function blog_form($type, $id)
     {
-        $data = Blog::where('id', $id)->first();
-        return view('Admin.Blog.editview', compact('data'));
+        $permission = ($id == '0') ? $this->create : $this->edit;
+        if (! $this->list || ! $permission) {
+            abort(403);
+        }
+
+        $data['blog'] = Blog::where('id', $id)->first();
+
+        return view('admin.blog.edit', compact('data'));
     }
+
     public function save_blog(Request $request)
     {
+        $permission = ($request->id == '0') ? $this->create : $this->edit;
+        if (! $this->list || ! $permission) {
+            abort(403);
+        }
+
         $validate = $request->validate([
-            'title' => 'required',
+            'name' => 'required',
             'description' => 'required',
         ]);
 
-        if (empty($request->file)) {
-            $filename = $request->old_file;
+        if (empty($request->image)) {
+            $filename = $request->old_image;
         } else {
-            $filename = $this->fileupload($request->file, 'blog');
+            $filename = $this->fileupload($request->image, 'blog');
         }
 
         $string = strtolower($request->title);
         $string = preg_replace('/[^a-z0-9]+/', '-', $string);
         $addBlog = Blog::updateOrCreate(['id' => $request->id], [
-            'title' => $request->title,
-            'file' => $filename,
+            'name' => $request->name,
+            'image' => $filename,
             'slug' => $string,
             'description' => $request->description,
         ]);
-        if (!empty($addBlog)) {
+
+        if (! empty($addBlog)) {
             return redirect()->route('blog_list')->with('success', 'Data Added Successfully!');
         } else {
             return back()->with('error', 'Something went wrong!');

@@ -2,14 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Routing\Router;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Blade;
+use App\Http\Middleware\RoleCheck;
 use App\View\Admin\Components\layout;
 use App\View\Admin\Components\modal;
 use App\View\Web\Components\layout as webLayout;
-use App\Http\Middleware\RoleCheck;
+use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureRoutes();
         $router->aliasMiddleware('admin', RoleCheck::class);
     }
-    
+
     /**
      * Define the application's route groups.
      */

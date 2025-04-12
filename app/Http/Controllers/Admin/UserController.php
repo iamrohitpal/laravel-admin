@@ -3,24 +3,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Hash;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     private bool $list;
+
     private bool $create;
+
     private bool $edit;
+
     private bool $delete;
+
     public function __construct()
     {
-        $this->list = Permission::getPermissionBySlugAndId('Product');
-        $this->create = Permission::getPermissionBySlugAndId('Product', 'Create');
-        $this->edit = Permission::getPermissionBySlugAndId('Product', 'Edit');
-        $this->delete = Permission::getPermissionBySlugAndId('Product', 'Delete');
+        $this->list = Permission::getPermissionBySlugAndId('User');
+        $this->create = Permission::getPermissionBySlugAndId('User', 'Create');
+        $this->edit = Permission::getPermissionBySlugAndId('User', 'Edit');
+        $this->delete = Permission::getPermissionBySlugAndId('User', 'Delete');
     }
 
     public function user_list()
@@ -62,16 +66,16 @@ class UserController extends Controller
         ]);
 
         $user = User::find($request->id);
-    
-        $password = ($request->id == '0' || !empty($request->password)) 
-            ? Hash::make($request->password) 
+
+        $password = ($request->id == '0' || ! empty($request->password))
+            ? Hash::make($request->password)
             : ($user ? $user->password : null);
 
         User::updateOrCreate(['id' => $request->id], [
             'name' => $request->name,
             'email' => $request->email,
             'role_id' => (int) $request->role_id,
-            'password' => $password
+            'password' => $password,
         ]);
 
         return to_route('user_list')->with('success', 'User created/updated successfully');

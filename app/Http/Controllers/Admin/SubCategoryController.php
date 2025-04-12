@@ -2,27 +2,30 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Permission;
 use App\Models\Category;
-use App\Traits\GlobalDeleteTrait;
+use App\Models\Permission;
 use App\Traits\UploadFileTrait;
+use Illuminate\Http\Request;
 
 class SubCategoryController extends Controller
 {
-    use GlobalDeleteTrait;
     use UploadFileTrait;
+
     private bool $list;
+
     private bool $create;
+
     private bool $edit;
+
     private bool $delete;
+
     public function __construct()
     {
-        $this->list = Permission::getPermissionBySlugAndId('Product');
-        $this->create = Permission::getPermissionBySlugAndId('Product', 'Create');
-        $this->edit = Permission::getPermissionBySlugAndId('Product', 'Edit');
-        $this->delete = Permission::getPermissionBySlugAndId('Product', 'Delete');
+        $this->list = Permission::getPermissionBySlugAndId('Sub Category');
+        $this->create = Permission::getPermissionBySlugAndId('Sub Category', 'Create');
+        $this->edit = Permission::getPermissionBySlugAndId('Sub Category', 'Edit');
+        $this->delete = Permission::getPermissionBySlugAndId('Sub Category', 'Delete');
     }
 
     public function subcategory_list()
@@ -71,7 +74,7 @@ class SubCategoryController extends Controller
             'cat_id' => 'required',
         ]);
 
-        if (!empty($request->image)) {
+        if (! empty($request->image)) {
             $image = $this->fileupload($request->image, 'category');
         } else {
             $image = $request->old_image;
@@ -87,7 +90,7 @@ class SubCategoryController extends Controller
             'cat_id' => $subCatId,
             'slug' => $string,
         ]);
-        if (!empty($add_data)) {
+        if (! empty($add_data)) {
             return redirect()->route('subcategory_list')->with('success', 'Category Added Successfully!');
         } else {
             return redirect()->back()->with('error', 'Something went erong!');

@@ -8,9 +8,9 @@ trait UploadFileTrait
 {
     public function fileupload($file, $type, $id = null)
     {
-        $path = public_path("upload_image/" . $type);
+        $path = public_path('upload_image/'.$type);
 
-        if (!is_dir($path)) {
+        if (! is_dir($path)) {
             mkdir($path, 0777, true);
         }
 
@@ -18,14 +18,14 @@ trait UploadFileTrait
         $cleanName = str_replace(' ', '-', $originalName);
         $cleanName = preg_replace('/[^A-Za-z0-9\.\-]/', '', $cleanName);
 
-        $filename = time() . '-' . $type . '-' . $cleanName;
+        $filename = time().'-'.$type.'-'.$cleanName;
 
         $file->move($path, $filename);
 
         if ($id) {
             DB::table('images')->insert([
                 'product_id' => $id,
-                'name'       => $filename,
+                'name' => $filename,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Permission;
 use App\Models\Category;
+use App\Models\Permission;
 use App\Models\Product;
-use App\Traits\GlobalDeleteTrait;
 use App\Traits\UploadFileTrait;
 use DB;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    use GlobalDeleteTrait;
     use UploadFileTrait;
+
     private bool $list;
+
     private bool $create;
+
     private bool $edit;
+
     private bool $delete;
+
     public function __construct()
     {
         $this->list = Permission::getPermissionBySlugAndId('Product');
@@ -46,6 +49,7 @@ class ProductController extends Controller
 
         return view('admin.product.index', compact('data'));
     }
+
     public function product_form($type, $id)
     {
         $permission = ($id == '0') ? $this->create : $this->edit;
@@ -59,6 +63,7 @@ class ProductController extends Controller
 
         return view('admin.product.edit', compact('data'));
     }
+
     public function save_product(Request $request)
     {
         $permission = ($request->id == '0') ? $this->create : $this->edit;
@@ -88,7 +93,7 @@ class ProductController extends Controller
                 $images = $request->file('images');
                 $getImages = DB::table('images')->where('product_id', $add_data->id)->get();
                 foreach ($getImages as $val) {
-                    if (!empty($val)) {
+                    if (! empty($val)) {
                         DB::table('images')->where('id', $val->id)->delete();
                     }
                 }
@@ -99,14 +104,14 @@ class ProductController extends Controller
                 $images = DB::table('images')->where('product_id', $add_data->id)->get();
                 $old_image = json_decode($request->old_file);
                 foreach ($images as $val) {
-                    if (!in_array($val->name, $old_image)) {
+                    if (! in_array($val->name, $old_image)) {
                         DB::table('images')->where('id', $val->id)->delete();
                     }
                 }
             }
         }
 
-        if (!empty($add_data)) {
+        if (! empty($add_data)) {
             return redirect()->route('product_list')->with('success', 'Data Added Successfully!');
         } else {
             return redirect()->back()->with('error', 'Somthing went wrong!');

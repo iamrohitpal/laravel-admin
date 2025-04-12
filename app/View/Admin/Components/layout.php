@@ -13,8 +13,7 @@ class layout extends Component
      */
     public function __construct(
         public string $type = 'dashboard'
-    )
-    {
+    ) {
         //
     }
 

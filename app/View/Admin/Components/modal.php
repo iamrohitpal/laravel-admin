@@ -14,8 +14,7 @@ class modal extends Component
     public function __construct(
         public string $type = 'delete',
         public string $id = '0'
-    )
-    {
+    ) {
         //
     }
 
